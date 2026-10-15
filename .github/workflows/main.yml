@@ -1,4 +1,4 @@
-name: "IRANOSH | Android APK Builder"
+name: "HAMED IRANOSH | Android APK Builder"
 
 on:
   workflow_dispatch:
@@ -27,32 +27,33 @@ jobs:
       - name: "Install Android SDK"
         uses: android-actions/setup-android@v3
 
-      - name: "Accept Android SDK Licenses"
+      - name: "Install Android SDK Packages"
         shell: bash
         run: |
-          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: "Check Project Files"
+      - name: "Install Gradle 8.7"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: "Check Android Project"
         shell: bash
         run: |
-          echo "Checking repository files..."
-          ls -la
-
-          if [ ! -f gradlew ]; then
-            echo "ERROR: gradlew not found."
-            echo "Upload the complete Android project first."
-            exit 1
-          fi
-
-          chmod +x gradlew
+          test -f settings.gradle
+          test -f build.gradle
+          test -f app/build.gradle
+          test -f app/src/main/AndroidManifest.xml
+          echo "Android project files verified."
 
       - name: "Build Debug APK"
-        run: ./gradlew assembleDebug --stacktrace
+        shell: bash
+        run: gradle --no-daemon --stacktrace assembleDebug
 
       - name: "Upload APK"
         uses: actions/upload-artifact@v4
         with:
-          name: IRANOSH-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: HAMED-IRANOSH-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
